@@ -1,6 +1,8 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
 import GameContext from "../../GameContext";
+import gameService from "../../services/gameService";
+import socketService from "../../services/socketService";
 
 const GameContainer = styled.div`
   display: flex;
@@ -82,7 +84,20 @@ export function Game() {
       newMatrix[row][col] = symbol;
       setMatrix(newMatrix);
     }
+
+    if (socketService.socket) {
+      gameService.updateGame(socketService.socket, newMatrix);
+    }
   };
+
+  useEffect(() => {
+    if (socketService.socket) {
+      gameService.onGameUpdate(socketService.socket, (gameBoard) => {
+        console.log("received update", gameBoard);
+        setMatrix(gameBoard);
+      });
+    }
+  }, []);
 
   return (
     <GameContainer>
