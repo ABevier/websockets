@@ -1,0 +1,2 @@
+- implement basic attack functionality
+- implement swapping
