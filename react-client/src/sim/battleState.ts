@@ -40,8 +40,8 @@ export interface Command {
 }
 
 export function setup(): Battle {
-  const champ1: Champion = { id: "champ1", specId: "samurai", moves: ["tackle"], hp: 100, energy: 100 };
-  const champ2: Champion = { id: "champ2", specId: "ninja", moves: ["tackle"], hp: 100, energy: 100 };
+  const champ1: Champion = { id: "champ1", specId: "samurai", moves: ["tackle", "slash"], hp: 100, energy: 100 };
+  const champ2: Champion = { id: "champ2", specId: "ninja", moves: ["tackle", "swords_dance"], hp: 100, energy: 100 };
 
   const champ3: Champion = { id: "champ3", specId: "knight", moves: ["tackle"], hp: 100, energy: 100 };
   const champ4: Champion = { id: "champ4", specId: "wizard", moves: ["tackle"], hp: 100, energy: 100 };
@@ -52,6 +52,8 @@ export function setup(): Battle {
 
   return { teams: [team1, team2] };
 }
+
+//TODO: use IMMER
 
 export function runCommand(battle: Battle, cmd: Command): string {
   const champ = getChampionAtPosition(battle, cmd.source);
@@ -72,6 +74,10 @@ export function getChampionAtPosition(battle: Battle, pos: Position): Champion {
   //todo: bounds checking?
   const side = battle.teams[pos.side];
   return side.activeChampions[pos.slot];
+}
+
+export function getAllActiveChampions(battle: Battle): Champion[] {
+  return [...battle.teams[0].activeChampions, ...battle.teams[1].activeChampions];
 }
 
 // export function findActiveChampionById(battle: Battle, teamId: number, id: string): Champion | undefined {
