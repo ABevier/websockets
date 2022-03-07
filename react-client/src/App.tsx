@@ -2,14 +2,19 @@ import React, { useState } from "react";
 import "./App.css";
 import { Battle, Champion, getAllActiveChampions, runCommand, setup } from "./sim/battleState";
 
+type ChampionClickHandler = (side: number, slot: number) => void;
+
 interface ChampionHUDProps {
   champion: Champion;
+  side: number;
+  slot: number;
+  onClick: ChampionClickHandler;
 }
 
-const ChampionHUD = ({ champion }: ChampionHUDProps) => {
+const ChampionHUD = ({ champion, side, slot, onClick }: ChampionHUDProps) => {
   const { id, hp } = champion;
   return (
-    <div className="item">
+    <div className="item" onClick={() => onClick(side, slot)}>
       <div>{id}</div>
       <div>HP: {hp}</div>
     </div>
@@ -18,22 +23,28 @@ const ChampionHUD = ({ champion }: ChampionHUDProps) => {
 
 interface BattleDisplayProps {
   battle: Battle;
+  onChampionClick: ChampionClickHandler;
 }
 
-const BattleDisplay = ({ battle }: BattleDisplayProps) => {
+const BattleDisplay = ({ battle, onChampionClick }: BattleDisplayProps) => {
   const [side1, side2] = battle.teams;
 
   return (
     <div style={{ display: "flex" }}>
-      <div style={{ display: "flex", flexDirection: "column", margin: "5%" }}>
-        {side1.activeChampions.map((c) => (
-          <ChampionHUD key={c.id} champion={c} />
-        ))}
+      <div style={{ flex: 1 }}>
+        <div style={{ display: "flex", flexDirection: "column", margin: "5%" }}>
+          {side1.activeChampions.map((c, idx) => (
+            <ChampionHUD key={c.id} champion={c} side={0} slot={idx} onClick={onChampionClick} />
+          ))}
+        </div>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", margin: "5%" }}>
-        {side2.activeChampions.map((c) => (
-          <ChampionHUD key={c.id} champion={c} />
-        ))}
+      <div style={{ flex: 1 }}></div>
+      <div style={{ flex: 1 }}>
+        <div style={{ display: "flex", flexDirection: "column", margin: "5%" }}>
+          {side2.activeChampions.map((c, idx) => (
+            <ChampionHUD key={c.id} champion={c} side={1} slot={idx} onClick={onChampionClick} />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -110,12 +121,16 @@ function App() {
   // const result = runCommand(battle, cmd);
   // console.log(result);
 
+  const onChampionClicked = (side: number, slot: number) => {
+    console.log(`champ was clicked: side:${side} slot:${slot}`);
+  };
+
   return (
     <div
       className="App"
       style={{ display: "flex", flexDirection: "column", minHeight: "100vh", justifyContent: "center", alignItems: "center" }}
     >
-      <BattleDisplay battle={battle} />
+      <BattleDisplay battle={battle} onChampionClick={onChampionClicked} />
       <MyMenu battle={battle} />
     </div>
   );
