@@ -1,6 +1,40 @@
-.item {
-  flex-grow: 1;
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-content {
+  display: flex;
+  width: 40vw;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.battle-display {
+  display: flex;
+  width: 100%;
+}
+
+.team-column-container {
+  flex: 1 1 auto;
+}
+
+.team-column {
+  display: flex;
+  flex-direction: column;
   margin: 5%;
+}
+
+.champion {
+  height: 100%;
+  flex: 1 1 auto;
+  margin: 5%;
+  border-style: solid;
+  border-radius: 5%;
 }
 
 /*

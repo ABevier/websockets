@@ -14,7 +14,7 @@ interface ChampionHUDProps {
 const ChampionHUD = ({ champion, side, slot, onClick }: ChampionHUDProps) => {
   const { id, hp } = champion;
   return (
-    <div className="item" onClick={() => onClick(side, slot)}>
+    <div className="champion" onClick={() => onClick(side, slot)}>
       <div>{id}</div>
       <div>HP: {hp}</div>
     </div>
@@ -30,17 +30,17 @@ const BattleDisplay = ({ battle, onChampionClick }: BattleDisplayProps) => {
   const [side1, side2] = battle.teams;
 
   return (
-    <div style={{ display: "flex" }}>
-      <div style={{ flex: 1 }}>
-        <div style={{ display: "flex", flexDirection: "column", margin: "5%" }}>
+    <div className="battle-display">
+      <div className="team-column-container">
+        <div className="team-column">
           {side1.activeChampions.map((c, idx) => (
             <ChampionHUD key={c.id} champion={c} side={0} slot={idx} onClick={onChampionClick} />
           ))}
         </div>
       </div>
-      <div style={{ flex: 1 }}></div>
-      <div style={{ flex: 1 }}>
-        <div style={{ display: "flex", flexDirection: "column", margin: "5%" }}>
+      <div className="team-column-container"></div>
+      <div className="team-column-container">
+        <div className="team-column">
           {side2.activeChampions.map((c, idx) => (
             <ChampionHUD key={c.id} champion={c} side={1} slot={idx} onClick={onChampionClick} />
           ))}
@@ -52,14 +52,14 @@ const BattleDisplay = ({ battle, onChampionClick }: BattleDisplayProps) => {
 
 interface MoveMenuProps {
   moves: string[];
-  onClick: (s: string) => void;
+  onClick: (idx: number) => void;
 }
 
 const MoveMenu = ({ moves, onClick }: MoveMenuProps) => {
   return (
     <div style={{ display: "flex" }}>
-      {moves.map((m) => (
-        <button key={m} onClick={(e) => onClick(m)}>
+      {moves.map((m, idx) => (
+        <button key={m} onClick={(e) => onClick(idx)}>
           {m}
         </button>
       ))}
@@ -69,31 +69,19 @@ const MoveMenu = ({ moves, onClick }: MoveMenuProps) => {
 
 interface MyMenuProps {
   battle: Battle;
+  selectionState: number;
+  champIdx: number;
+  menuClickHandler: (idx: number)=>void
 }
 
-const MyMenu = ({ battle }: MyMenuProps) => {
-  const [champIdx, setChampIdx] = useState(0);
-
-  const [selectionState, setSelectionState] = useState(0);
-
+const MyMenu = ({ battle, selectionState, champIdx, menuClickHandler }: MyMenuProps) => {
   const champ = champByIndex(battle, champIdx);
-
-  const clickHandler = (move: string) => {
-    console.log(move);
-    if (selectionState === 0) {
-      setSelectionState(1);
-    } else {
-      setChampIdx(champIdx + 1);
-      setSelectionState(0);
-    }
-  };
-
   return (
     <div>
       {selectionState === 0 && (
         <>
           <div>Select a move for {champ.id}:</div>
-          <MoveMenu moves={champ.moves} onClick={clickHandler} />
+          <MoveMenu moves={champ.moves} onClick={menuClickHandler} />
         </>
       )}
       {selectionState === 1 && (
@@ -121,17 +109,31 @@ function App() {
   // const result = runCommand(battle, cmd);
   // console.log(result);
 
+  const [champIdx, setChampIdx] = useState(0);
+  const [selectionState, setSelectionState] = useState(0);
+
+  const menuClickHandler = (idx: number) => {
+    //temp: 
+    const champ = champByIndex(battle, champIdx)
+    console.log(`clicked on: ${champ.moves[idx]}`);
+    if (selectionState === 0) {
+      setSelectionState(1);
+    } else {
+      setChampIdx(champIdx + 1);
+      setSelectionState(0);
+    }
+  };
+
   const onChampionClicked = (side: number, slot: number) => {
     console.log(`champ was clicked: side:${side} slot:${slot}`);
   };
 
   return (
-    <div
-      className="App"
-      style={{ display: "flex", flexDirection: "column", minHeight: "100vh", justifyContent: "center", alignItems: "center" }}
-    >
-      <BattleDisplay battle={battle} onChampionClick={onChampionClicked} />
-      <MyMenu battle={battle} />
+    <div className="app-container">
+      <div className="app-content">
+        <BattleDisplay battle={battle} onChampionClick={onChampionClicked} />
+        <MyMenu battle={battle} selectionState={selectionState} champIdx={champIdx} menuClickHandler={menuClickHandler} />
+      </div>
     </div>
   );
 }
