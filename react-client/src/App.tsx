@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./App.css";
-import { Battle, Champion, getAllActiveChampions, runCommand, setup } from "./sim/battleState";
+import { Battle, Champion, Command, getAllActiveChampions, Position, runCommand, setup } from "./sim/battleState";
 
 type ChampionClickHandler = (side: number, slot: number) => void;
 
@@ -71,7 +71,7 @@ interface MyMenuProps {
   battle: Battle;
   selectionState: number;
   champIdx: number;
-  menuClickHandler: (idx: number)=>void
+  menuClickHandler: (idx: number) => void;
 }
 
 const MyMenu = ({ battle, selectionState, champIdx, menuClickHandler }: MyMenuProps) => {
@@ -93,39 +93,74 @@ const MyMenu = ({ battle, selectionState, champIdx, menuClickHandler }: MyMenuPr
   );
 };
 
+//This is jank, do it differently
 const champByIndex = (battle: Battle, index: number): Champion => {
   return getAllActiveChampions(battle)[index];
+};
+
+//This is jank, do it differently
+const champPosFromIndex = (battle: Battle, index: number): Position => {
+  const firstTeamLen = battle.teams[0].activeChampions.length;
+  const side = Math.floor(index / firstTeamLen);
+  const slot = index % firstTeamLen;
+  return { side, slot };
 };
 
 function App() {
   const battle = setup();
 
-  //console.log(battle);
-
-  // const src = { side: 0, slot: 0 };
-  // const target = { side: 1, slot: 0 };
-  // const cmd = { source: src, moveSlot: 0, target };
-
-  // const result = runCommand(battle, cmd);
-  // console.log(result);
-
+  //TODO: ....gonna want Redux or useReducer...
   const [champIdx, setChampIdx] = useState(0);
+  const [moveIdx, setMoveIdx] = useState(-1);
   const [selectionState, setSelectionState] = useState(0);
+  const [commands, setCommands] = useState<Command[]>([]);
 
   const menuClickHandler = (idx: number) => {
-    //temp: 
-    const champ = champByIndex(battle, champIdx)
+    const champ = champByIndex(battle, champIdx);
     console.log(`clicked on: ${champ.moves[idx]}`);
     if (selectionState === 0) {
+      setMoveIdx(idx);
       setSelectionState(1);
-    } else {
-      setChampIdx(champIdx + 1);
-      setSelectionState(0);
     }
   };
 
   const onChampionClicked = (side: number, slot: number) => {
-    console.log(`champ was clicked: side:${side} slot:${slot}`);
+    if (selectionState === 1) {
+      console.log(`target champ was clicked: side:${side} slot:${slot}`);
+      const command = {
+        source: champPosFromIndex(battle, champIdx),
+        moveSlot: moveIdx,
+        target: {
+          side,
+          slot,
+        },
+      };
+
+      const newCommands = [...commands, command];
+
+      const nextIdx = champIdx + 1;
+      if (nextIdx < getAllActiveChampions(battle).length) {
+        console.log("next champ");
+        //now get input for the next champ
+        setCommands(newCommands);
+        setChampIdx(nextIdx);
+        setSelectionState(0);
+        setMoveIdx(-1);
+      } else {
+        console.log("apply moves");
+        //now get input for the next champ
+        // we have all the commands, run them
+        //TODO: mutate the battle!!
+        newCommands.forEach((cmd) => {
+          const result = runCommand(battle, cmd);
+          console.log(result);
+        });
+        setCommands([]);
+        setChampIdx(0);
+        setSelectionState(0);
+        setMoveIdx(0);
+      }
+    }
   };
 
   return (
